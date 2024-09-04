@@ -9,6 +9,7 @@ public class User
     public int Pin  { get; set; }
     public bool IsPinSet { get; set; }
     public bool IsPinUnlock { get; set; }
+    public bool IsActive { get; set; }
     public string? Email { get; set; }
     public string? Username { get; set; }
     public string? Password { get; set; }

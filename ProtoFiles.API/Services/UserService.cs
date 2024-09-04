@@ -10,7 +10,7 @@ public class UserService(IUserRepository userRepository, ILogger<UserService> lo
     public async Task<User?> GetUserByCredentialsAsync(string username, string password)
     {
         var user = await userRepository.GetAsync(username);
-        if (user == null) return null;
+        if (user == null || user.IsActive == false) return null;
 
         var decryptedPassword = ZCrypt.DecryptString(user.Password ?? "", user.Id.ToHexString());
         if (decryptedPassword != password) return null;
@@ -43,6 +43,7 @@ public class UserService(IUserRepository userRepository, ILogger<UserService> lo
             Password = encryptedPassword,
             IsPinSet = false,
             IsPinUnlock = false,
+            IsActive = true,
             ProfilePicturePath = profilePicturePath,
         };
 
@@ -54,7 +55,7 @@ public class UserService(IUserRepository userRepository, ILogger<UserService> lo
     public async Task<int> TryGetPinAsync(string username)
     {
         var user = await userRepository.GetAsync(username);
-        if (user == null) return -1;
+        if (user == null || user.IsActive == false) return -1;
         return user.Pin;
     }
 
@@ -80,7 +81,7 @@ public class UserService(IUserRepository userRepository, ILogger<UserService> lo
         var user = await userRepository.GetAsync(username);
         if (user == null || password.Length < 8) return false;
 
-        user.Password = ZCrypt.EncryptString(password, user.Id.ToString());
+        user.Password = ZCrypt.EncryptString(password, user.Id.ToHexString());
         await userRepository.UpdateAsync(user);
         return true;
     }
@@ -107,6 +108,15 @@ public class UserService(IUserRepository userRepository, ILogger<UserService> lo
         var user = await userRepository.GetAsync(username);
         if (user == null) return false;
         await userRepository.DeleteAsync(user);
+        return true;
+    }
+
+    public async Task<bool> TryDeactivateUserAsync(string username)
+    {
+        var user = await userRepository.GetAsync(username);
+        if (user == null) return false;
+        user.IsActive = false;
+        await userRepository.UpdateAsync(user);
         return true;
     }
 }

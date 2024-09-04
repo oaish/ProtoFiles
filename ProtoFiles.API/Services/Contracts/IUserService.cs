@@ -14,4 +14,5 @@ public interface IUserService
     Task<bool> TryUpdatePinUnlockAsync(string username, bool isPinUnlock);
     Task<bool> TryChangePasswordAsync(string username, string password);
     Task<bool> TryDeleteUserAsync(string username);
+    Task<bool> TryDeactivateUserAsync(string username);
 }

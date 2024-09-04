@@ -28,6 +28,7 @@ public class Program
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUserService, UserService>();
+        builder.Services.AddScoped<IDriveRepository, DriveRepository>();
 
         var app = builder.Build();
 
