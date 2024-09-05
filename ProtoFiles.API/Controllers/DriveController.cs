@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using ProtoFiles.API.Services.Contracts;
+using ProtoFiles.Lib.Models;
 
 namespace ProtoFiles.API.Controllers;
 
@@ -7,8 +8,29 @@ namespace ProtoFiles.API.Controllers;
 [ApiController]
 public class DriveController(IDriveService driveService) : ControllerBase
 {
+
+    [HttpGet("[action]/{fileGuid}")]
+    public async Task<ActionResult> GetFiles(string fileGuid)
+    {
+        var isValid = Guid.TryParse(fileGuid, out var userId);
+        if (isValid == false) return BadRequest("Invalid User ID.");
+
+        var files = await driveService.GetFilesByUserIdAsync(userId);
+        return Ok(files);
+    }
+
+    [HttpGet("[action]/{fileGuid}")]
+    public async Task<ActionResult> GetFile(string fileGuid)
+    {
+        var isValid = Guid.TryParse(fileGuid, out var fileId);
+        if (isValid == false) return BadRequest("Invalid File ID.");
+
+        var file = await driveService.GetFileByIdAsync(fileId);
+        return Ok(file);
+    }
+
     [HttpPost("[action]")]
-    public async Task<ActionResult<bool>> AddFile([FromForm] IFormFile? file, [FromForm] string userGuid, [FromForm] string fileName, [FromForm] string? coverImage)
+    public async Task<ActionResult> AddFile([FromForm] IFormFile? file, [FromForm] string userGuid, [FromForm] string fileName, [FromForm] string? coverImage)
     {
         if (file == null) return BadRequest("File is required.");
         var isValid = Guid.TryParse(userGuid, out var userId);
@@ -19,8 +41,8 @@ public class DriveController(IDriveService driveService) : ControllerBase
         return Ok(true);
     }
 
-    [HttpPost("[action]")]
-    public async Task<ActionResult<bool>> RemoveFile([FromBody] string? guid)
+    [HttpDelete("[action]")]
+    public async Task<ActionResult> RemoveFile([FromBody] string? guid)
     {
         var isValid = Guid.TryParse(guid, out var fileId);
         if (isValid == false) return BadRequest("Invalid File ID.");
@@ -28,7 +50,4 @@ public class DriveController(IDriveService driveService) : ControllerBase
         await driveService.RemoveFileAsync(fileId);
         return Ok(true);
     }
-
-
-
 }

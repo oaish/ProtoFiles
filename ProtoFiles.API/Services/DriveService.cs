@@ -23,20 +23,20 @@ public class DriveService(IDriveRepository driveRepository, IWebHostEnvironment 
 
     public async Task AddFileAsync(IFormFile file, Guid userId, string fileName, string? coverImage)
     {
-        var timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        var fileId = Guid.NewGuid();
         var extension = Path.GetExtension(file.FileName)[1..];
 
         var uploadPath = Path.Combine(env.WebRootPath, userId.ToString());
         if (Directory.Exists(uploadPath) == false) Directory.CreateDirectory(uploadPath);
 
-        var filePath = Path.Combine(uploadPath, $"{HttpUtility.UrlEncode(fileName)}_{timestamp}.{extension}");
+        var filePath = Path.Combine(uploadPath, $"{HttpUtility.UrlEncode(fileName)}_{fileId}.{extension}");
 
         await using var stream = new FileStream(filePath, FileMode.Create);
         await file.CopyToAsync(stream);
 
         var metaData = new FileModel()
         {
-            Id = Guid.NewGuid(),
+            Id = fileId,
             Name = fileName,
             Path = filePath,
             Type = extension,
