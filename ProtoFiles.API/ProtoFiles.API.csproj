@@ -16,4 +16,8 @@
       <ProjectReference Include="..\ProtoFiles.Lib\ProtoFiles.Lib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
+
 </Project>

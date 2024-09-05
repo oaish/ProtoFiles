@@ -5,7 +5,7 @@ using ProtoFiles.Lib.Models;
 
 namespace ProtoFiles.API.Services;
 
-public class UserService(IUserRepository userRepository, ILogger<UserService> logger) : IUserService
+public class UserService(IUserRepository userRepository) : IUserService
 {
     public async Task<User?> GetUserByCredentialsAsync(string username, string password)
     {
@@ -92,14 +92,6 @@ public class UserService(IUserRepository userRepository, ILogger<UserService> lo
         if (user == null) return false;
         user.IsPinUnlock = isPinUnlock;
         await userRepository.UpdateAsync(user);
-        return true;
-    }
-
-    public async Task<bool> TryChangePasswordAsync(string username, string password)
-    {
-        var user = await userRepository.GetAsync(username);
-        if (user == null) return false;
-        user.Password = password;
         return true;
     }
 

@@ -8,7 +8,7 @@ public class DriveRepository(IMongoDatabase db) : IDriveRepository
 {
     private readonly IMongoCollection<FileModel> _collection = db.GetCollection<FileModel>("Files");
 
-    public async Task<List<FileModel>?> GetFilesByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<FileModel>?> GetFilesByUserIdAsync(Guid userId)
     {
         var files = (await _collection.FindAsync(f => f.UserId == userId)).ToList();
         return files;

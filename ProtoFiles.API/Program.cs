@@ -29,6 +29,7 @@ public class Program
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IDriveRepository, DriveRepository>();
+        builder.Services.AddScoped<IDriveService, DriveService>();
 
         var app = builder.Build();
 
@@ -39,10 +40,11 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseStaticFiles();
+
         app.UseHttpsRedirection();
 
         app.UseAuthorization();
-
 
         app.MapControllers();
 
