@@ -1,3 +1,6 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using ProtoFiles.API.Repositories;
 using ProtoFiles.API.Repositories.Contracts;
@@ -11,7 +14,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-
+        var config = builder.Configuration;
         // Add services to the container.
 
         builder.Services.AddControllers();
@@ -19,12 +22,46 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
+        // Add CORS services to the container
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowSpecificOrigins",
+                policy =>
+                {
+                    policy.WithOrigins("https://localhost:3000") // Specify the allowed origin(s)
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+        });
+
         builder.Services.AddScoped<IMongoDatabase>(sp =>
         {
-            var client = new MongoClient(builder.Configuration.GetValue<string>("MongoUri"));
-            var db = client.GetDatabase(builder.Configuration.GetValue<string>("Database"));
+            var client = new MongoClient(config["MongoUri"]);
+            var db = client.GetDatabase(config["Database"]);
             return db;
         });
+
+        builder.Services.AddAuthentication(x =>
+        {
+            x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+        }).AddJwtBearer(x =>
+        {
+            x.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidIssuer = config["JwtSettings:Issuer"],
+                ValidAudience = config["JwtSettings:Audience"],
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:Key"]!)),
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+            };
+        });
+
+        builder.Services.AddAuthorization();
 
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUserService, UserService>();
@@ -40,9 +77,13 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseCors("AllowSpecificOrigins");
+
         app.UseStaticFiles();
 
         app.UseHttpsRedirection();
+
+        app.UseAuthentication();
 
         app.UseAuthorization();
 

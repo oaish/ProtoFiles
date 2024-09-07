@@ -1,21 +1,19 @@
-﻿using Mercenary.ZCrypt.Core;
-using ProtoFiles.API.Repositories.Contracts;
+﻿using ProtoFiles.API.Repositories.Contracts;
 using ProtoFiles.API.Services.Contracts;
 using ProtoFiles.Lib.Models;
 
 namespace ProtoFiles.API.Services;
 
-public class UserService(IUserRepository userRepository) : IUserService
+public class UserService(IUserRepository userRepository, ILogger<UserService> logger) : IUserService
 {
     public async Task<User?> GetUserByCredentialsAsync(string username, string password)
     {
         var user = await userRepository.GetAsync(username);
         if (user == null || user.IsActive == false) return null;
 
-        var decryptedPassword = ZCrypt.DecryptString(user.Password ?? "", user.Id.ToHexString());
-        if (decryptedPassword != password) return null;
+        if (password.VerifyHash(user.PasswordHash) == false) return null;
 
-        user.Password = null;
+        user.PasswordHash = null;
         return user;
     }
 
@@ -32,15 +30,13 @@ public class UserService(IUserRepository userRepository) : IUserService
         if (isUsernameAvailable == false) return false;
 
         var guid = Guid.NewGuid();
-        var encryptedPassword = ZCrypt.EncryptString(password, guid.ToHexString());
-
         var user = new User()
         {
             Id = guid,
             Pin = default,
             Email = email,
             Username = username,
-            Password = encryptedPassword,
+            PasswordHash = password.Hash(),
             IsPinSet = false,
             IsPinUnlock = false,
             IsActive = true,
@@ -62,7 +58,7 @@ public class UserService(IUserRepository userRepository) : IUserService
     public async Task<string?> TryGetPasswordAsync(string username)
     {
         var user = await userRepository.GetAsync(username);
-        return user == null ? null : ZCrypt.DecryptString(user.Password ?? "", user.Id.ToHexString());
+        return user?.PasswordHash;
     }
 
     public async Task<bool> TryUpdatePinAsync(string username, int pin)
@@ -81,7 +77,7 @@ public class UserService(IUserRepository userRepository) : IUserService
         var user = await userRepository.GetAsync(username);
         if (user == null || password.Length < 8) return false;
 
-        user.Password = ZCrypt.EncryptString(password, user.Id.ToHexString());
+        user.PasswordHash = password.Hash();
         await userRepository.UpdateAsync(user);
         return true;
     }

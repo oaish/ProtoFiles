@@ -17,7 +17,7 @@ public class UserRepository(IMongoDatabase db) : IUserRepository
 
     public async Task<User?> GetAsync(string username, string password)
     {
-        var user = await _collection.Find(u => u.Username == username && u.Password == password).FirstOrDefaultAsync();
+        var user = await _collection.Find(u => u.Username == username && u.PasswordHash == password).FirstOrDefaultAsync();
         return user;
     }
 

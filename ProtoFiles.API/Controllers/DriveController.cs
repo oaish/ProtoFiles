@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ProtoFiles.API.Services.Contracts;
 using ProtoFiles.Lib.Models;
 
 namespace ProtoFiles.API.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class DriveController(IDriveService driveService) : ControllerBase
