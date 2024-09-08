@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using ProtoFiles.API.Services.Contracts;
 using ProtoFiles.Lib.Dto;
 using ProtoFiles.Lib.Models;
-using BCryptNet = BCrypt.Net.BCrypt;
 
 namespace ProtoFiles.API.Controllers;
 
@@ -14,24 +13,40 @@ public class UserController(IUserService userService) : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost]
-    public async Task<ActionResult<bool>> Register([FromBody] LoginUserDto userDto)
+    public async Task<ActionResult<dynamic>> Register([FromBody] LoginUserDto dto)
     {
-        List<string?> inputs = [userDto.Email, userDto.Username, userDto.Password];
+        List<string?> inputs = [dto.Email, dto.Username, dto.Password];
         if (inputs.Any(string.IsNullOrEmpty)) return BadRequest("email, username and password fields are required");
 
-        var userCreated = await userService.TryCreateUserAsync(userDto.Email!, userDto.Username!, userDto.Password!, userDto.ProfilePicturePath);
+        var userCreated =
+            await userService.TryCreateUserAsync(dto.Email!, dto.Username!, dto.Password!, dto.ProfilePicturePath);
         if (userCreated == false) return BadRequest("Failed to create user");
-        return Ok(true);
+
+        var token = await dto.GenerateToken();
+        return Ok(new { Token = token });
     }
 
     [AllowAnonymous]
     [HttpPost]
-    public async Task<ActionResult<User>> Login([FromBody] LoginUserDto userDto)
+    public async Task<ActionResult<dynamic>> Login([FromBody] LoginUserDto dto)
     {
-        if (string.IsNullOrEmpty(userDto.Username) || string.IsNullOrEmpty(userDto.Password)) return BadRequest("Username/Password is required");
-        var user = await userService.GetUserByCredentialsAsync(userDto.Username, userDto.Password);
-        if (user == null) return NotFound();
-        return Ok(user);
+        if (string.IsNullOrEmpty(dto.Username) || string.IsNullOrEmpty(dto.Password))
+            return BadRequest("Username/Password is required");
+        var user = await userService.GetUserByCredentialsAsync(dto.Username, dto.Password);
+        if (user == null) return NotFound("Username or password is incorrect");
+        var token = await dto.GenerateToken();
+        return Ok(new{User = user, Token = token});
+    }
+
+    [AllowAnonymous]
+    [HttpPost]
+    public async Task<ActionResult<dynamic>> VerifyPin([FromBody] PinDto dto)
+    {
+        if (string.IsNullOrEmpty(dto.Username)) return BadRequest("Username is required");
+        var pin = await userService.TryGetPinAsync(dto.Username);
+        if (pin == -1) return BadRequest("Invalid username");
+        if (pin != dto.Pin) return Ok(new { isValid = false }); 
+        return Ok(new { isValid = true });
     }
 
     [AllowAnonymous]
@@ -42,15 +57,13 @@ public class UserController(IUserService userService) : ControllerBase
         var isUsernameAvailable = await userService.IsUsernameAvailableAsync(userDto.Username);
         return Ok(isUsernameAvailable);
     }
-
-    [AllowAnonymous]
+    
     [HttpGet]
-    public async Task<ActionResult<int>> VerifyPin([FromQuery] PinDto dto)
+    public async Task<ActionResult<bool>> VerifyJwt([FromQuery] string username)
     {
-        if (string.IsNullOrEmpty(dto.Username)) return BadRequest("Username is required");
-        var pin = await userService.TryGetPinAsync(dto.Username);
-        if (pin == -1) return BadRequest("Invalid username");
-        return Ok(pin);
+        if (string.IsNullOrEmpty(username)) return BadRequest("Username is required");
+        var usernameExists = await userService.IsUsernameAvailableAsync(username);
+        return Ok(new { Exists = !usernameExists });
     }
 
     [HttpGet]
@@ -89,9 +102,11 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPatch]
     public async Task<ActionResult<bool>> UpdatePassword([FromBody] PasswordDto passwordDto)
     {
-        if (string.IsNullOrEmpty(passwordDto.Username) || string.IsNullOrEmpty(passwordDto.NewPassword) || string.IsNullOrEmpty(passwordDto.OldPassword))
+        if (string.IsNullOrEmpty(passwordDto.Username) || string.IsNullOrEmpty(passwordDto.NewPassword) ||
+            string.IsNullOrEmpty(passwordDto.OldPassword))
             return BadRequest("All fields are required");
-        if (passwordDto.NewPassword == passwordDto.OldPassword) return BadRequest("New password and old password cannot be same");
+        if (passwordDto.NewPassword == passwordDto.OldPassword)
+            return BadRequest("New password and old password cannot be same");
 
         var password = await userService.TryGetPasswordAsync(passwordDto.Username);
         if (password == null) return BadRequest("Invalid username");

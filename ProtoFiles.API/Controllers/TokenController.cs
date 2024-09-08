@@ -1,8 +1,10 @@
 ﻿using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using ProtoFiles.Lib.Dto;
 using ProtoFiles.Lib.Models;
 
 namespace ProtoFiles.API.Controllers;
@@ -20,8 +22,8 @@ public class TokenController(IConfiguration config) : ControllerBase
         var claims = new List<Claim>()
         {
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new(JwtRegisteredClaimNames.Sub, payload.Email),
-            new(JwtRegisteredClaimNames.Email, payload.Email),
+            new(JwtRegisteredClaimNames.Sub, payload.Username),
+            new(JwtRegisteredClaimNames.Email, payload.Username),
             new("userid", payload.UserId.ToString())
         };
 
@@ -32,7 +34,8 @@ public class TokenController(IConfiguration config) : ControllerBase
             IssuedAt = DateTime.UtcNow,
             Issuer = config["JwtSettings:Issuer"]!,
             Audience = config["JwtSettings:Audience"]!,
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            SigningCredentials =
+                new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
 
         var token = tokenHandler.CreateToken(tokenDescriptor);

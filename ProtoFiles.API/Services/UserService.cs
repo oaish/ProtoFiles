@@ -4,7 +4,7 @@ using ProtoFiles.Lib.Models;
 
 namespace ProtoFiles.API.Services;
 
-public class UserService(IUserRepository userRepository, ILogger<UserService> logger) : IUserService
+public class UserService(IUserRepository userRepository) : IUserService
 {
     public async Task<User?> GetUserByCredentialsAsync(string username, string password)
     {
@@ -14,6 +14,7 @@ public class UserService(IUserRepository userRepository, ILogger<UserService> lo
         if (password.VerifyHash(user.PasswordHash) == false) return null;
 
         user.PasswordHash = null;
+        user.Pin = 0;
         return user;
     }
 

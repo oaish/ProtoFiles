@@ -21,17 +21,18 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddHttpClient();
 
         // Add CORS services to the container
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowSpecificOrigins",
-                policy =>
-                {
-                    policy.WithOrigins("https://localhost:3000") // Specify the allowed origin(s)
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
+            options.AddPolicy("AllowAllOrigins",
+            builder =>
+            {
+                builder.AllowAnyOrigin()
+                       .AllowAnyMethod()
+                       .AllowAnyHeader();
+            });
         });
 
         builder.Services.AddScoped<IMongoDatabase>(sp =>
@@ -46,7 +47,8 @@ public class Program
             x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             x.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-        }).AddJwtBearer(x =>
+        })
+        .AddJwtBearer(x =>
         {
             x.TokenValidationParameters = new TokenValidationParameters
             {
@@ -62,7 +64,7 @@ public class Program
         });
 
         builder.Services.AddAuthorization();
-
+        
         builder.Services.AddScoped<IUserRepository, UserRepository>();
         builder.Services.AddScoped<IUserService, UserService>();
         builder.Services.AddScoped<IDriveRepository, DriveRepository>();
@@ -77,11 +79,11 @@ public class Program
             app.UseSwaggerUI();
         }
 
-        app.UseCors("AllowSpecificOrigins");
-
         app.UseStaticFiles();
 
         app.UseHttpsRedirection();
+
+        app.UseCors("AllowAllOrigins");
 
         app.UseAuthentication();
 
