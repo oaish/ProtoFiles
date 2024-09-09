@@ -9,7 +9,7 @@ namespace ProtoFiles.API.Controllers;
 [Authorize]
 [Route("api/[controller]/[action]")]
 [ApiController]
-public class UserController(IUserService userService) : ControllerBase
+public class UserController(IUserService userService, HttpClient client, IConfiguration config) : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost]
@@ -22,7 +22,7 @@ public class UserController(IUserService userService) : ControllerBase
             await userService.TryCreateUserAsync(dto.Email!, dto.Username!, dto.Password!, dto.ProfilePicturePath);
         if (userCreated == false) return BadRequest("Failed to create user");
 
-        var token = await dto.GenerateToken();
+        var token = await dto.GenerateToken(client, config["BaseUrl"]);
         return Ok(new { Token = token });
     }
 
@@ -34,7 +34,7 @@ public class UserController(IUserService userService) : ControllerBase
             return BadRequest("Username/Password is required");
         var user = await userService.GetUserByCredentialsAsync(dto.Username, dto.Password);
         if (user == null) return NotFound("Username or password is incorrect");
-        var token = await dto.GenerateToken();
+        var token = await dto.GenerateToken(client, config["BaseUrl"]);
         return Ok(new{User = user, Token = token});
     }
 

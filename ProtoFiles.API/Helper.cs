@@ -17,15 +17,13 @@ public static class Helper
         return value != null ? BCryptNet.HashPassword(value) : string.Empty;
     }
 
-    public static bool VerifyHash(this string? value, string? salt)
+    public static bool VerifyHash(this string? value, string? hash)
     {
-        return value != null && BCryptNet.Verify(value, salt);
+        return value != null && BCryptNet.Verify(value, hash);
     }
 
-    public static async Task<string?> GenerateToken(this LoginUserDto dto)
+    public static async Task<string?> GenerateToken(this LoginUserDto dto, HttpClient client, string baseUrl)
     {
-        var client = new HttpClient();
-
         var payload = new
         {
             dto.Username,
@@ -37,12 +35,23 @@ public static class Helper
 
         try
         {
-            var response = await client.PostAsync("https://localhost:7172/api/Token/Generate", content);
-            if (!response.IsSuccessStatusCode) return null;
+            var response = await client.PostAsync($"{baseUrl}/api/Token/Generate", content);
+
+            if (!response.IsSuccessStatusCode)
+                return null;
 
             var token = await response.Content.ReadAsStringAsync();
             return token;
         }
-        catch (Exception) {return null;}
+        catch (HttpRequestException ex)
+        {
+            Console.WriteLine($"Request error: {ex.Message}");
+            return null;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Unexpected error: {ex.Message}");
+            return null;
+        }
     }
 }
