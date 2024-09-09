@@ -1,0 +1,41 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Oaish Qazi\\RiderProjects\\ProtoFiles\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{E32AA4CC-619E-45E0-8E06-FD665B71D89D}|ProtoFiles.API\\ProtoFiles.API.csproj|c:\\users\\oaish qazi\\riderprojects\\protofiles\\protofiles.api\\protofiles.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{E32AA4CC-619E-45E0-8E06-FD665B71D89D}|ProtoFiles.API\\ProtoFiles.API.csproj|solutionrelative:protofiles.api\\protofiles.api.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ProtoFiles.API",
+              "DocumentMoniker": "C:\\Users\\Oaish Qazi\\RiderProjects\\ProtoFiles\\ProtoFiles.API\\ProtoFiles.API.csproj",
+              "RelativeDocumentMoniker": "ProtoFiles.API\\ProtoFiles.API.csproj",
+              "ToolTip": "C:\\Users\\Oaish Qazi\\RiderProjects\\ProtoFiles\\ProtoFiles.API\\ProtoFiles.API.csproj",
+              "RelativeToolTip": "ProtoFiles.API\\ProtoFiles.API.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2024-09-09T15:27:50.103Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
