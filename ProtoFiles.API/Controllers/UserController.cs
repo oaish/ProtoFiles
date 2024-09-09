@@ -22,7 +22,7 @@ public class UserController(IUserService userService, HttpClient client, IConfig
             await userService.TryCreateUserAsync(dto.Email!, dto.Username!, dto.Password!, dto.ProfilePicturePath);
         if (userCreated == false) return BadRequest("Failed to create user");
 
-        var token = await dto.GenerateToken(client, config["BaseUrl"]);
+        var token = await dto.GenerateToken(client);
         return Ok(new { Token = token });
     }
 
@@ -34,7 +34,7 @@ public class UserController(IUserService userService, HttpClient client, IConfig
             return BadRequest("Username/Password is required");
         var user = await userService.GetUserByCredentialsAsync(dto.Username, dto.Password);
         if (user == null) return NotFound("Username or password is incorrect");
-        var token = await dto.GenerateToken(client, config["BaseUrl"]);
+        var token = await dto.GenerateToken(client);
         return Ok(new{User = user, Token = token});
     }
 

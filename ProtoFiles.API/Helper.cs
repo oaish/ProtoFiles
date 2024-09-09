@@ -7,11 +7,6 @@ namespace ProtoFiles.API;
 
 public static class Helper
 {
-    public static string ToHexString(this Guid guid)
-    {
-        return guid.ToString().Substring(0, 16);
-    }
-
     public static string Hash(this string? value)
     {
         return value != null ? BCryptNet.HashPassword(value) : string.Empty;
@@ -22,7 +17,7 @@ public static class Helper
         return value != null && BCryptNet.Verify(value, hash);
     }
 
-    public static async Task<string?> GenerateToken(this LoginUserDto dto, HttpClient client, string baseUrl)
+    public static async Task<string?> GenerateToken(this LoginUserDto dto, HttpClient client)
     {
         var payload = new
         {
@@ -35,7 +30,7 @@ public static class Helper
 
         try
         {
-            var response = await client.PostAsync($"{baseUrl}/api/Token/Generate", content);
+            var response = await client.PostAsync($"http://localhost:8080/api/Token/Generate", content);
 
             if (!response.IsSuccessStatusCode)
                 return null;
