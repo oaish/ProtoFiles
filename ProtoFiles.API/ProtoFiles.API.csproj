@@ -16,17 +16,17 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ProtoFiles.Lib\ProtoFiles.Lib.csproj" />
+        <ProjectReference Include="..\ProtoFiles.Lib\ProtoFiles.Lib.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="wwwroot\" />
+        <Folder Include="wwwroot\" />
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
+        <Content Include="..\.dockerignore">
+            <Link>.dockerignore</Link>
+        </Content>
     </ItemGroup>
 
 </Project>
